@@ -5,18 +5,22 @@
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Sock Size Calculator (Gauge-Based)</title>
   <style>
-    :root{
-  --bg1:#fff7ed;       /* warm background */
-  --bg2:#fffbeb;
-  --card:#ffffff;
-  --muted:#7c6f64;
-  --text:#2a1f1b;
-  --border:#f1e6d8;
-  --soft:#fff1e6;
-  --accent:#b45309;    /* warm orange */
-  --accent2:#ea580c;
-  --radius:20px;
-  --shadow: 0 14px 34px rgba(42, 31, 27, .08);
+
+    @media (prefers-color-scheme: dark) {
+  :root{
+    --bg1:#0b1220;
+    --bg2:#0a0f1a;
+    --card:#0f172a;
+    --muted:#94a3b8;
+    --text:#e5e7eb;
+    --border:#1f2a44;
+    --soft:#101a2c;
+    --accent:#60a5fa;
+    --accent2:#38bdf8;
+    --shadow: 0 14px 40px rgba(0,0,0,.35);
+  }
+  input, select { background:#0b1220; color: var(--text); }
+  .code { background:#050a14; }
 }
     
     *{box-sizing:border-box}
