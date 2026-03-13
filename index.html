@@ -1,0 +1,788 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Sock Size Calculator (Gauge-Based)</title>
+  <style>
+    :root{
+      --bg1:#f8fafc;
+      --bg2:#ffffff;
+      --card:#ffffff;
+      --muted:#64748b;
+      --text:#0f172a;
+      --border:#e2e8f0;
+      --soft:#f1f5f9;
+      --accent:#2563eb;
+      --accent2:#0ea5e9;
+      --radius:18px;
+      --shadow: 0 10px 30px rgba(2, 6, 23, .06);
+      --mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+      --sans: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji", "Segoe UI Emoji";
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0;
+      font-family:var(--sans);
+      color:var(--text);
+      background: linear-gradient(180deg, var(--bg1), var(--bg2));
+      padding: 22px;
+    }
+    .wrap{max-width:1100px;margin:0 auto}
+    h1{margin:0 0 6px;font-size: clamp(22px, 2.2vw, 32px);letter-spacing:-0.02em}
+    p.lead{margin:0 0 18px;color:var(--muted);max-width: 820px;line-height:1.5}
+    .grid{
+      display:grid;
+      grid-template-columns: 1.4fr 0.9fr;
+      gap: 16px;
+      align-items:start;
+    }
+    @media (max-width: 980px){
+      .grid{grid-template-columns:1fr}
+    }
+    .card{
+      background:var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      overflow:hidden;
+    }
+    .card .head{
+      padding: 16px 16px 10px;
+      display:flex;justify-content:space-between;gap:12px;align-items:flex-start;
+    }
+    .card .title{
+      margin:0;font-size: 18px; font-weight: 650;
+    }
+    .card .desc{
+      margin:4px 0 0;color:var(--muted);font-size: 13px;line-height:1.45
+    }
+    .badges{display:flex;gap:8px;flex-wrap:wrap}
+    .badge{
+      font-size:12px;
+      padding:6px 10px;
+      border-radius: 999px;
+      border:1px solid var(--border);
+      background: #fff;
+      color: #334155;
+      white-space:nowrap;
+    }
+    .badge.soft{background: var(--soft)}
+    .content{padding: 14px 16px 16px}
+    .section{padding: 6px 0 14px}
+    .sep{height:1px;background:var(--border);margin: 12px 0}
+    .row{
+      display:grid;
+      grid-template-columns: repeat(3, minmax(0,1fr));
+      gap: 12px;
+    }
+    @media (max-width: 740px){
+      .row{grid-template-columns:1fr}
+    }
+    label{
+      display:block;
+      font-size: 12px;
+      color:#334155;
+      margin-bottom:6px;
+      font-weight: 600;
+    }
+    input, select{
+      width:100%;
+      padding: 10px 12px;
+      border:1px solid var(--border);
+      border-radius: 12px;
+      font-size: 14px;
+      outline:none;
+      background:#fff;
+    }
+    input:focus, select:focus{
+      border-color: rgba(37,99,235,.55);
+      box-shadow: 0 0 0 4px rgba(37,99,235,.12);
+    }
+    .hint{
+      margin-top:6px;
+      font-size: 12px;
+      color: var(--muted);
+      line-height:1.35;
+    }
+    .inline{
+      display:flex;gap:10px;align-items:center;flex-wrap:wrap;
+    }
+    .toggle{
+      display:flex;
+      background: var(--soft);
+      border:1px solid var(--border);
+      border-radius: 12px;
+      overflow:hidden;
+      width:100%;
+      max-width: 340px;
+    }
+    .toggle button{
+      flex:1;
+      border:0;
+      padding:10px 12px;
+      background:transparent;
+      font-weight:600;
+      cursor:pointer;
+      color:#334155;
+    }
+    .toggle button.active{
+      background:#fff;
+      color:var(--accent);
+      box-shadow: inset 0 0 0 1px rgba(37,99,235,.25);
+    }
+    .rangeWrap{
+      display:flex;align-items:center;gap:10px;
+    }
+    input[type="range"]{padding:0;border:0}
+    .kpi{
+      background: var(--soft);
+      border-radius: 16px;
+      padding: 12px;
+      border: 1px solid var(--border);
+    }
+    .kpi .item{display:flex;justify-content:space-between;gap:12px;padding:6px 0}
+    .kpi .item span:first-child{color:var(--muted)}
+    .kpi .item span:last-child{font-weight:650}
+    .resultBox{
+      border:1px solid var(--border);
+      border-radius: 16px;
+      padding: 14px;
+      background: #fff;
+    }
+    .resultLine{
+      display:flex;justify-content:space-between;gap:12px;padding:6px 0;align-items:baseline;
+    }
+    .resultLine .label{color:var(--muted);font-size: 13px}
+    .resultLine .value{font-weight: 720}
+    .big{font-size: 22px}
+    .btn{
+      width:100%;
+      border:0;
+      padding: 12px 14px;
+      border-radius: 14px;
+      font-weight: 700;
+      cursor:pointer;
+      background: linear-gradient(90deg, var(--accent), var(--accent2));
+      color:#fff;
+      box-shadow: 0 12px 30px rgba(37,99,235,.20);
+    }
+    .btn:active{transform: translateY(1px)}
+    .btn.secondary{
+      width:auto;
+      background: var(--soft);
+      color:#0f172a;
+      box-shadow:none;
+      border:1px solid var(--border);
+      font-weight:650;
+    }
+    .note{
+      margin-top:10px;
+      font-size: 12px;
+      color: var(--muted);
+      line-height:1.35;
+    }
+    .foot{
+      margin-top: 16px;
+      border:1px dashed var(--border);
+      border-radius: 16px;
+      padding: 12px;
+      background: rgba(241,245,249,.6);
+    }
+    .code{
+      font-family: var(--mono);
+      font-size: 12px;
+      white-space: pre-wrap;
+      word-break: break-word;
+      background:#0b1220;
+      color:#e5e7eb;
+      padding: 12px;
+      border-radius: 14px;
+      border: 1px solid rgba(255,255,255,.06);
+      margin-top: 12px;
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <h1>Sock Size Calculator</h1>
+    <p class="lead">
+      Enter your <b>gauge</b> and <b>foot measurements</b>. This outputs a practical stitch plan:
+      cast‑on, heel estimates, and where to start the toe (top‑down socks).
+    </p>
+
+    <div class="grid">
+      <!-- INPUTS -->
+      <div class="card" id="inputsCard">
+        <div class="head">
+          <div>
+            <div class="title">Inputs</div>
+            <div class="desc">Adjust these to match your swatch and foot.</div>
+          </div>
+          <div class="badges">
+            <span class="badge soft">Top‑down</span>
+            <span class="badge">Gauge‑based</span>
+          </div>
+        </div>
+
+        <div class="content">
+          <div class="section">
+            <div class="row">
+              <div>
+                <label>Units</label>
+                <div class="toggle" role="tablist" aria-label="Units toggle">
+                  <button id="btnMetric" class="active" type="button">Metric (cm)</button>
+                  <button id="btnImperial" type="button">Imperial (in)</button>
+                </div>
+                <div class="hint">Switching converts your measurements automatically.</div>
+              </div>
+
+              <div>
+                <label>Heel type</label>
+                <select id="heelType">
+                  <option value="flap">Heel flap + gusset</option>
+                  <option value="short">Short-row heel</option>
+                </select>
+                <div class="hint">Flap+gusset gives estimates; short‑row keeps stitch count constant.</div>
+              </div>
+
+              <div>
+                <label>Toe target stitches</label>
+                <input id="toeTargetSt" type="number" step="2" value="16" min="8" max="28">
+                <div class="hint">Common: 12–20 depending on comfort.</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="sep"></div>
+
+          <div class="section">
+            <div class="row">
+              <div>
+                <label>Gauge stitches</label>
+                <input id="gaugeSt" type="number" step="1" value="32" min="1">
+                <div class="hint">Stitches in <span id="gaugeLenLabelA">10</span> <span class="unit">cm</span></div>
+              </div>
+              <div>
+                <label>Gauge rows</label>
+                <input id="gaugeRows" type="number" step="1" value="44" min="1">
+                <div class="hint">Rows in <span id="gaugeLenLabelB">10</span> <span class="unit">cm</span></div>
+              </div>
+              <div>
+                <label>Gauge length</label>
+                <input id="gaugeLen" type="number" step="0.5" value="10" min="0.5">
+                <div class="hint">Common: 10 cm or 4 in</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="sep"></div>
+
+          <div class="section">
+            <div class="row" style="grid-template-columns: repeat(2, minmax(0,1fr));">
+              <div>
+                <label>Foot circumference (<span class="unit">cm</span>)</label>
+                <input id="footCirc" type="number" step="0.1" value="21.5" min="10">
+                <div class="hint">Measure around ball of foot (snug, not tight).</div>
+              </div>
+              <div>
+                <label>Foot length (<span class="unit">cm</span>)</label>
+                <input id="footLen" type="number" step="0.1" value="25" min="10">
+                <div class="hint">Heel to longest toe.</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="section">
+            <div class="row">
+              <div>
+                <label>Negative ease: <span id="easePctLabel">10</span>%</label>
+                <div class="rangeWrap">
+                  <input id="easePct" type="range" min="0" max="20" step="1" value="10" />
+                </div>
+                <div class="hint">Typical socks: 5–12% for good fit.</div>
+              </div>
+
+              <div>
+                <label>Stitch multiple (pattern)</label>
+                <input id="stitchMultiple" type="number" step="1" value="4" min="1">
+                <div class="hint">E.g., 4 for many textures/cables.</div>
+              </div>
+
+              <div>
+                <label>Cuff multiple (ribbing)</label>
+                <input id="cuffMultiple" type="number" step="1" value="4" min="1">
+                <div class="hint">2×2 rib → 4, 1×1 rib → 2.</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="sep"></div>
+
+          <div class="section">
+            <div class="row">
+              <div>
+                <label>Cuff length (<span class="unit">cm</span>)</label>
+                <input id="cuffLen" type="number" step="0.5" value="5" min="0">
+              </div>
+              <div>
+                <label>Leg length (<span class="unit">cm</span>)</label>
+                <input id="legLen" type="number" step="0.5" value="15" min="0">
+              </div>
+              <div class="foot">
+                <div class="inline" style="justify-content:space-between">
+                  <div>
+                    <label style="margin:0 0 6px">Quick preset (EU shoe size)</label>
+                    <div class="hint" style="margin:0 0 10px">Optional helper for approximate foot measures.</div>
+                    <div class="inline">
+                      <input id="euSize" type="number" step="1" value="39" style="max-width:120px">
+                      <button class="btn secondary" id="applyPreset" type="button">Apply preset</button>
+                    </div>
+                    <div class="hint">Best accuracy: measure your foot.</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- RESULTS -->
+      <div class="card">
+        <div class="head">
+          <div>
+            <div class="title">Results</div>
+            <div class="desc">Use these numbers as a solid starting recipe.</div>
+          </div>
+        </div>
+
+        <div class="content">
+          <div class="kpi">
+            <div class="item">
+              <span>Target circumference</span>
+              <span><span id="targetCirc">—</span> <span class="unit">cm</span></span>
+            </div>
+            <div class="item">
+              <span>Stitches per <span class="unit">cm</span></span>
+              <span id="stPerUnit">—</span>
+            </div>
+            <div class="item">
+              <span>Rows per <span class="unit">cm</span></span>
+              <span id="rowsPerUnit">—</span>
+            </div>
+          </div>
+
+          <div style="height:12px"></div>
+
+          <div class="resultBox">
+            <div class="resultLine">
+              <div class="label">Cast on</div>
+              <div class="value big"><span id="castOn">—</span> sts</div>
+            </div>
+            <div class="hint">Rounded to a multiple of <b id="multLabel">—</b>.</div>
+
+            <div class="sep"></div>
+
+            <div id="heelFlapBlock">
+              <div class="resultLine">
+                <div class="label">Heel flap</div>
+                <div class="value"><span id="heelFlap">—</span></div>
+              </div>
+              <div class="resultLine">
+                <div class="label">Pick up (each side)</div>
+                <div class="value">~<span id="pickupEach">—</span> sts</div>
+              </div>
+              <div class="resultLine">
+                <div class="label">Max gusset stitches</div>
+                <div class="value">~<span id="gussetMax">—</span> sts</div>
+              </div>
+              <div class="resultLine">
+                <div class="label">Gusset decrease rounds</div>
+                <div class="value">~<span id="gussetDecRounds">—</span></div>
+              </div>
+              <div class="note">Rule of thumb: decrease 2 sts per decrease round until back to your cast‑on stitch count.</div>
+            </div>
+
+            <div id="heelShortBlock" style="display:none">
+              <div class="resultLine">
+                <div class="label">Heel</div>
+                <div class="value">Short‑row (keep <span id="shortHeelSt">—</span> sts)</div>
+              </div>
+              <div class="note">Short‑row heel instructions vary; stitch count stays constant.</div>
+            </div>
+
+            <div class="sep"></div>
+
+            <div class="resultLine">
+              <div class="label">Cuff</div>
+              <div class="value">~<span id="cuffRounds">—</span> rounds</div>
+            </div>
+            <div class="resultLine">
+              <div class="label">Leg</div>
+              <div class="value">~<span id="legRounds">—</span> rounds</div>
+            </div>
+
+            <div class="sep"></div>
+
+            <div class="resultLine">
+              <div class="label">Start toe after</div>
+              <div class="value">~<span id="startToeAfter">—</span> <span class="unit">cm</span></div>
+            </div>
+            <div class="note">That’s ~<span id="startToeRounds">—</span> rounds before toe decreases.</div>
+
+            <div class="resultLine">
+              <div class="label">Toe decreases</div>
+              <div class="value"><span id="toeDecRounds">—</span> decrease rounds</div>
+            </div>
+            <div class="resultLine">
+              <div class="label">Toe length (est.)</div>
+              <div class="value">~<span id="toeLen">—</span> <span class="unit">cm</span></div>
+            </div>
+            <div class="note">Assumes decreases every other round (common wedge toe).</div>
+          </div>
+
+          <div style="height:12px"></div>
+
+          <button class="btn" id="copyRecipe" type="button">Copy recipe</button>
+          <div class="note">Tip: If your sock feels loose/tight, adjust negative ease (try 8–12%) or re-check your gauge.</div>
+
+          <div class="code" id="recipePreview" aria-label="Recipe preview"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // ---------------------------
+    // Helpers
+    // ---------------------------
+    function roundToMultiple(n, multiple){
+      if(!multiple || multiple <= 1) return Math.round(n);
+      return Math.round(n / multiple) * multiple;
+    }
+    function clamp(n, min, max){ return Math.min(max, Math.max(min, n)); }
+    function isFiniteNumber(n){ return typeof n === "number" && isFinite(n); }
+    function formatNum(n, digits){
+      if(!isFiniteNumber(n)) return "—";
+      return n.toFixed(digits ?? 0);
+    }
+
+    // ---------------------------
+    // Presets (approximate)
+    // ---------------------------
+    const presets = {
+      eu: [
+        { min: 35, max: 37, footLenCm: 23.5, footCircCm: 20.5 },
+        { min: 38, max: 40, footLenCm: 25.0, footCircCm: 21.5 },
+        { min: 41, max: 43, footLenCm: 27.0, footCircCm: 23.0 },
+        { min: 44, max: 46, footLenCm: 29.0, footCircCm: 24.5 }
+      ]
+    };
+    function suggestFromEU(size){
+      const s = Number(size);
+      const row = presets.eu.find(r => s >= r.min && s <= r.max);
+      if(!row) return null;
+      return { footLenCm: row.footLenCm, footCircCm: row.footCircCm };
+    }
+
+    // ---------------------------
+    // Calculation
+    // ---------------------------
+    function calcFromGauge(params){
+      const {
+        gaugeSt, gaugeRows, gaugeLen,
+        footCirc, footLen,
+        easePct,
+        stitchMultiple, cuffMultiple,
+        toeTargetSt,
+        heelType,
+        legLen, cuffLen
+      } = params;
+
+      // Guard against divide-by-zero
+      const gLen = (gaugeLen && gaugeLen > 0) ? gaugeLen : 1;
+
+      const stPerUnit = gaugeSt / gLen;
+      const rowsPerUnit = gaugeRows / gLen;
+
+      const ease = 1 - (easePct / 100);
+      const targetCirc = footCirc * ease;
+
+      // Cast on
+      let rawSt = targetCirc * stPerUnit;
+      let castOn = roundToMultiple(rawSt, Math.max(1, stitchMultiple));
+
+      // Cuff multiple override
+      if(cuffMultiple && cuffMultiple > 1){
+        castOn = roundToMultiple(castOn, cuffMultiple);
+      }
+
+      // Basic clamp (you can remove or widen if you prefer)
+      castOn = clamp(castOn, 40, 160);
+
+      // Heel
+      const heel = {};
+      if(heelType === "flap"){
+        heel.flapStitches = Math.round(castOn / 2);
+        heel.flapRows = Math.round(heel.flapStitches * 1.0);
+        heel.gussetPickupEachSide = Math.round(heel.flapRows / 2);
+        heel.gussetMaxStitches = castOn + heel.gussetPickupEachSide * 2;
+        heel.gussetDecTotal = heel.gussetMaxStitches - castOn;
+        heel.gussetDecRounds = Math.ceil(heel.gussetDecTotal / 2);
+      } else {
+        heel.type = "short-row";
+        heel.stitches = castOn;
+      }
+
+      // Length planning
+      const legRounds = legLen * rowsPerUnit;
+      const cuffRounds = cuffLen * rowsPerUnit;
+
+      // Toe planning (wedge toe assumption)
+      const toeEnd = clamp(toeTargetSt, 8, 28);
+      const toeDecNeeded = Math.max(0, castOn - toeEnd);
+      const toeDecRounds = Math.ceil(toeDecNeeded / 4); // 4 sts decreased per dec round
+      const toeTotalRounds = toeDecRounds * 2;          // every other round
+      const toeLenUnits = toeTotalRounds / rowsPerUnit;
+
+      const footBeforeToe = Math.max(0, footLen - toeLenUnits);
+      const footRoundsBeforeToe = footBeforeToe * rowsPerUnit;
+
+      return {
+        stPerUnit, rowsPerUnit, targetCirc, castOn,
+        heel, legRounds, cuffRounds,
+        toe: {
+          toeEnd, toeDecRounds, toeTotalRounds,
+          toeLenUnits, footBeforeToe, footRoundsBeforeToe
+        }
+      };
+    }
+
+    // ---------------------------
+    // DOM + State
+    // ---------------------------
+    const els = {
+      btnMetric: document.getElementById("btnMetric"),
+      btnImperial: document.getElementById("btnImperial"),
+      heelType: document.getElementById("heelType"),
+      toeTargetSt: document.getElementById("toeTargetSt"),
+
+      gaugeSt: document.getElementById("gaugeSt"),
+      gaugeRows: document.getElementById("gaugeRows"),
+      gaugeLen: document.getElementById("gaugeLen"),
+      gaugeLenLabelA: document.getElementById("gaugeLenLabelA"),
+      gaugeLenLabelB: document.getElementById("gaugeLenLabelB"),
+
+      footCirc: document.getElementById("footCirc"),
+      footLen: document.getElementById("footLen"),
+      easePct: document.getElementById("easePct"),
+      easePctLabel: document.getElementById("easePctLabel"),
+      stitchMultiple: document.getElementById("stitchMultiple"),
+      cuffMultiple: document.getElementById("cuffMultiple"),
+      cuffLen: document.getElementById("cuffLen"),
+      legLen: document.getElementById("legLen"),
+
+      euSize: document.getElementById("euSize"),
+      applyPreset: document.getElementById("applyPreset"),
+
+      // Results
+      targetCirc: document.getElementById("targetCirc"),
+      stPerUnit: document.getElementById("stPerUnit"),
+      rowsPerUnit: document.getElementById("rowsPerUnit"),
+      castOn: document.getElementById("castOn"),
+      multLabel: document.getElementById("multLabel"),
+
+      heelFlapBlock: document.getElementById("heelFlapBlock"),
+      heelShortBlock: document.getElementById("heelShortBlock"),
+      heelFlap: document.getElementById("heelFlap"),
+      pickupEach: document.getElementById("pickupEach"),
+      gussetMax: document.getElementById("gussetMax"),
+      gussetDecRounds: document.getElementById("gussetDecRounds"),
+      shortHeelSt: document.getElementById("shortHeelSt"),
+
+      cuffRounds: document.getElementById("cuffRounds"),
+      legRounds: document.getElementById("legRounds"),
+      startToeAfter: document.getElementById("startToeAfter"),
+      startToeRounds: document.getElementById("startToeRounds"),
+      toeDecRounds: document.getElementById("toeDecRounds"),
+      toeLen: document.getElementById("toeLen"),
+
+      copyRecipe: document.getElementById("copyRecipe"),
+      recipePreview: document.getElementById("recipePreview")
+    };
+
+    let units = "metric"; // 'metric' or 'imperial'
+
+    function setUnits(next){
+      if(next === units) return;
+
+      // Convert existing numeric values when switching.
+      const cmToIn = (v) => v / 2.54;
+      const inToCm = (v) => v * 2.54;
+
+      const num = (input) => Number(input.value);
+
+      if(next === "imperial"){
+        // cm -> in
+        els.footCirc.value = (cmToIn(num(els.footCirc))).toFixed(2);
+        els.footLen.value  = (cmToIn(num(els.footLen))).toFixed(2);
+        els.cuffLen.value  = (cmToIn(num(els.cuffLen))).toFixed(2);
+        els.legLen.value   = (cmToIn(num(els.legLen))).toFixed(2);
+        els.gaugeLen.value = "4"; // common swatch size in inches
+      } else {
+        // in -> cm
+        els.footCirc.value = (inToCm(num(els.footCirc))).toFixed(1);
+        els.footLen.value  = (inToCm(num(els.footLen))).toFixed(1);
+        els.cuffLen.value  = (inToCm(num(els.cuffLen))).toFixed(1);
+        els.legLen.value   = (inToCm(num(els.legLen))).toFixed(1);
+        els.gaugeLen.value = "10";
+      }
+
+      units = next;
+
+      // Toggle button UI
+      els.btnMetric.classList.toggle("active", units === "metric");
+      els.btnImperial.classList.toggle("active", units === "imperial");
+
+      // Update unit labels
+      document.querySelectorAll(".unit").forEach(el => el.textContent = (units === "metric" ? "cm" : "in"));
+      els.gaugeLenLabelA.textContent = els.gaugeLen.value;
+      els.gaugeLenLabelB.textContent = els.gaugeLen.value;
+
+      update();
+    }
+
+    function buildRecipePreview(state, computed, unitLabel){
+      const lines = [];
+      lines.push(`SOCK CALC (${units === "metric" ? "metric" : "imperial"})`);
+      lines.push(`Gauge: ${state.gaugeSt} sts / ${state.gaugeLen} ${unitLabel}, ${state.gaugeRows} rows / ${state.gaugeLen} ${unitLabel}`);
+      lines.push(`Foot: ${formatNum(state.footCirc, 1)} ${unitLabel} circ, ${formatNum(state.footLen, 1)} ${unitLabel} length`);
+      lines.push(`Ease: ${state.easePct}% negative`);
+      lines.push(`Cast on: ${computed.castOn} sts (multiple of ${state.cuffMultiple || state.stitchMultiple})`);
+
+      if(state.heelType === "flap"){
+        lines.push(`Heel flap: ${computed.heel.flapStitches} sts x ${computed.heel.flapRows} rows`);
+        lines.push(`Pick up: ~${computed.heel.gussetPickupEachSide} sts each side (max ~${computed.heel.gussetMaxStitches} sts)`);
+        lines.push(`Gusset decreases: ~${computed.heel.gussetDecRounds} decrease rounds to return to ${computed.castOn} sts`);
+      } else {
+        lines.push(`Heel: short-row (keep ${computed.castOn} sts)`);
+      }
+
+      lines.push(`Cuff: ${formatNum(state.cuffLen, 1)} ${unitLabel} (~${Math.round(computed.cuffRounds)} rounds)`);
+      lines.push(`Leg: ${formatNum(state.legLen, 1)} ${unitLabel} (~${Math.round(computed.legRounds)} rounds)`);
+      lines.push(`Start toe after: ~${formatNum(computed.toe.footBeforeToe, 1)} ${unitLabel} (~${Math.round(computed.toe.footRoundsBeforeToe)} rounds)`);
+      lines.push(`Toe: decrease rounds ${computed.toe.toeDecRounds} (every other round → ~${computed.toe.toeTotalRounds} rounds), end ${computed.toe.toeEnd} sts`);
+      return lines.join("\n");
+    }
+
+    function update(){
+      // Sync labels
+      els.easePctLabel.textContent = els.easePct.value;
+      els.gaugeLenLabelA.textContent = els.gaugeLen.value;
+      els.gaugeLenLabelB.textContent = els.gaugeLen.value;
+
+      // Read current state
+      const state = {
+        gaugeSt: Number(els.gaugeSt.value),
+        gaugeRows: Number(els.gaugeRows.value),
+        gaugeLen: Number(els.gaugeLen.value),
+        footCirc: Number(els.footCirc.value),
+        footLen: Number(els.footLen.value),
+        easePct: Number(els.easePct.value),
+        stitchMultiple: Number(els.stitchMultiple.value),
+        cuffMultiple: Number(els.cuffMultiple.value),
+        toeTargetSt: Number(els.toeTargetSt.value),
+        heelType: els.heelType.value,
+        legLen: Number(els.legLen.value),
+        cuffLen: Number(els.cuffLen.value),
+      };
+
+      const unitLabel = (units === "metric" ? "cm" : "in");
+
+      const computed = calcFromGauge(state);
+
+      // Top KPI
+      els.targetCirc.textContent = formatNum(computed.targetCirc, 1);
+      els.stPerUnit.textContent = formatNum(computed.stPerUnit, 2);
+      els.rowsPerUnit.textContent = formatNum(computed.rowsPerUnit, 2);
+
+      // Cast on
+      els.castOn.textContent = computed.castOn;
+      els.multLabel.textContent = (state.cuffMultiple || state.stitchMultiple);
+
+      // Heel blocks
+      const isFlap = state.heelType === "flap";
+      els.heelFlapBlock.style.display = isFlap ? "" : "none";
+      els.heelShortBlock.style.display = isFlap ? "none" : "";
+
+      if(isFlap){
+        els.heelFlap.textContent = `${computed.heel.flapStitches} sts × ${computed.heel.flapRows} rows`;
+        els.pickupEach.textContent = computed.heel.gussetPickupEachSide;
+        els.gussetMax.textContent = computed.heel.gussetMaxStitches;
+        els.gussetDecRounds.textContent = computed.heel.gussetDecRounds;
+      } else {
+        els.shortHeelSt.textContent = computed.castOn;
+      }
+
+      // Length planning
+      els.cuffRounds.textContent = Math.round(computed.cuffRounds);
+      els.legRounds.textContent = Math.round(computed.legRounds);
+
+      // Toe planning
+      els.startToeAfter.textContent = formatNum(computed.toe.footBeforeToe, 1);
+      els.startToeRounds.textContent = Math.round(computed.toe.footRoundsBeforeToe);
+      els.toeDecRounds.textContent = computed.toe.toeDecRounds;
+      els.toeLen.textContent = formatNum(computed.toe.toeLenUnits, 1);
+
+      // Recipe preview
+      els.recipePreview.textContent = buildRecipePreview(state, computed, unitLabel);
+    }
+
+    function attachListeners(){
+      const inputs = [
+        "heelType", "toeTargetSt",
+        "gaugeSt", "gaugeRows", "gaugeLen",
+        "footCirc", "footLen",
+        "easePct",
+        "stitchMultiple", "cuffMultiple",
+        "cuffLen", "legLen"
+      ];
+      inputs.forEach(id => {
+        const el = document.getElementById(id);
+        el.addEventListener("input", update);
+        el.addEventListener("change", update);
+      });
+
+      els.btnMetric.addEventListener("click", () => setUnits("metric"));
+      els.btnImperial.addEventListener("click", () => setUnits("imperial"));
+
+      els.applyPreset.addEventListener("click", () => {
+        // EU preset assumes metric; switch if needed
+        if(units !== "metric") setUnits("metric");
+        const s = suggestFromEU(els.euSize.value);
+        if(!s) return;
+        els.footLen.value = s.footLenCm;
+        els.footCirc.value = s.footCircCm;
+        update();
+      });
+
+      els.copyRecipe.addEventListener("click", async () => {
+        try{
+          await navigator.clipboard.writeText(els.recipePreview.textContent);
+          els.copyRecipe.textContent = "Copied ✓";
+          setTimeout(() => els.copyRecipe.textContent = "Copy recipe", 1200);
+        }catch(e){
+          // Fallback: select text
+          alert("Copy failed (browser permission). You can manually select the recipe text.");
+        }
+      });
+    }
+
+    // Init
+    document.querySelectorAll(".unit").forEach(el => el.textContent = "cm");
+    attachListeners();
+    update();
+  </script>
+</body>
+</html>
